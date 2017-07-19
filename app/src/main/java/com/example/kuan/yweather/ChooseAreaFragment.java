@@ -2,9 +2,16 @@ package com.example.kuan.yweather;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.kuan.yweather.db.City;
 import com.example.kuan.yweather.db.County;
 import com.example.kuan.yweather.db.Province;
@@ -23,6 +31,7 @@ import com.example.kuan.yweather.util.Utility;
 
 import org.litepal.crud.DataSupport;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -85,12 +94,20 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(i);
                     queryCounties();
-                }else if (currentLevel==LEVEL_COUNTY){
-                    String weatherId=countyList.get(i).getWeatherId();
-                    Intent intent=new Intent(getActivity(),WeatherActivity.class);
-                    intent.putExtra("weather_id",weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                } else if (currentLevel == LEVEL_COUNTY) {
+                    String weatherId = countyList.get(i).getWeatherId();
+                    if (getActivity() instanceof MainActivity) {
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else if (getActivity() instanceof WeatherActivity) {
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefreshLayout.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
@@ -187,18 +204,18 @@ public class ChooseAreaFragment extends Fragment {
                 } else if ("city".equals(type)) {
                     result = Utility.handleCityResponse(resText, selectedProvince.getId());
                 } else if ("county".equals(type)) {
-                    result=Utility.handleCountyReponse(resText,selectedCity.getId());
+                    result = Utility.handleCountyReponse(resText, selectedCity.getId());
                 }
-                if(result){
+                if (result) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             closeProgressDialog();
-                            if ("province".equals(type)){
+                            if ("province".equals(type)) {
                                 queryProvince();
-                            }else if("city".equals(type)){
+                            } else if ("city".equals(type)) {
                                 queryCities();
-                            }else if("county".equals(type)){
+                            } else if ("county".equals(type)) {
                                 queryCounties();
                             }
                         }
