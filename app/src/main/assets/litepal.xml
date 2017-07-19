@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<litepal>
+    <dbname value="y_weather" />
+    <version value="1" />
+    <list>
+        <mapping class="com.example.kuan.yweather.db.Province" />
+        <mapping class="com.example.kuan.yweather.db.City" />
+        <mapping class="com.example.kuan.yweather.db.County" />
+    </list>
+</litepal>
